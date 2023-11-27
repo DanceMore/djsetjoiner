@@ -2,6 +2,9 @@ use glob::glob;
 use std::io::{self, BufRead};
 use std::process::{exit, Command, Stdio};
 use tempfile::tempdir;
+use id3::Tag;
+use id3::TagLike;
+use dialoguer::Input;
 
 fn main() {
     // Create a temporary directory
@@ -34,14 +37,22 @@ fn main() {
     let outfile = format!("/tmp/{}{}.mp3", album_name, album_number);
     println!("will generate {}", outfile);
 
+    //let mut continue_input = String::new();
+    //while continue_input.to_lowercase() != "y" {
+    //    println!("continue (y): ");
+    //    continue_input.clear();
+    //    io::stdin()
+    //        .read_line(&mut continue_input)
+    //        .expect("Failed to read line");
+    //    continue_input = continue_input.trim().to_string();
+    //}
+
     let mut continue_input = String::new();
-    while continue_input.to_lowercase() != "y" {
-        println!("continue (y): ");
-        continue_input.clear();
-        io::stdin()
-            .read_line(&mut continue_input)
-            .expect("Failed to read line");
-        continue_input = continue_input.trim().to_string();
+    while continue_input.trim().to_lowercase() != "y" {
+        continue_input = Input::<String>::new()
+            .with_prompt("Continue (y)")
+            .interact()
+            .expect("Failed to read input");
     }
 
     // Execute the cat command in a shell with proper escaping
