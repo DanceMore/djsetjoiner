@@ -118,7 +118,10 @@ fn main() {
     } else {
         outfile = format!("/tmp/{}, {}.mp3", entered_album_name, dir_disc);
     }
-    println!("will generate {}", outfile);
+    println!(
+        "{}",
+        format!("[!] will generate => {}", outfile).red().bold()
+    );
 
     let escaped_list_str = shlex::join(list.iter().map(|file| file.as_str()));
     let cat_command = format!("cat {} >> {}", escaped_list_str, temp_outfile.display());
