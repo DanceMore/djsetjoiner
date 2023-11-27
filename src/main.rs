@@ -1,10 +1,13 @@
-use std::env;
 use std::io::{self, BufRead};
 use std::process::{Command, Stdio, exit};
 use glob::glob;
-use shlex::quote;
+use tempfile::tempdir;
 
 fn main() {
+    // Create a temporary directory
+    let temp_dir = tempdir().expect("Failed to create temporary directory");
+    let temp_outfile = temp_dir.path().join("out.mp3");
+
     let pwd_output = Command::new("pwd")
         .output()
         .expect("Failed to execute command");
@@ -39,15 +42,9 @@ fn main() {
         continue_input = continue_input.trim().to_string();
     }
 
-    let rm_output = Command::new("rm")
-        .arg("/tmp/out.mp3")
-        .stdout(Stdio::piped())  // Capture stdout of the child process
-        .spawn()
-        .expect("Failed to execute command");
-
     // Execute the cat command in a shell with proper escaping
     let escaped_list_str = shlex::join(list.iter().map(|file| file.as_str()));
-    let cat_command = format!("cat {} >> /tmp/out.mp3", escaped_list_str);
+    let cat_command = format!("cat {} >> {}", escaped_list_str, temp_outfile.display());
     println!("{}", cat_command);
 
     let cat_output = Command::new("sh")
@@ -55,11 +52,11 @@ fn main() {
         .arg(&cat_command)
         .output()
         .expect("Failed to execute command");
-
+    println!("cat command output: {}", String::from_utf8_lossy(&cat_output.stdout));
 
     let mut ffmpeg_command = Command::new("ffmpeg")
         .arg("-i")
-        .arg("/tmp/out.mp3")
+	.arg(temp_outfile)
         .arg("-acodec")
         .arg("copy")
         .arg(&outfile)
