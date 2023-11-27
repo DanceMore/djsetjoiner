@@ -1,6 +1,6 @@
-use std::io::{self, BufRead};
-use std::process::{Command, Stdio, exit};
 use glob::glob;
+use std::io::{self, BufRead};
+use std::process::{exit, Command, Stdio};
 use tempfile::tempdir;
 
 fn main() {
@@ -38,7 +38,9 @@ fn main() {
     while continue_input.to_lowercase() != "y" {
         println!("continue (y): ");
         continue_input.clear();
-        io::stdin().read_line(&mut continue_input).expect("Failed to read line");
+        io::stdin()
+            .read_line(&mut continue_input)
+            .expect("Failed to read line");
         continue_input = continue_input.trim().to_string();
     }
 
@@ -52,11 +54,14 @@ fn main() {
         .arg(&cat_command)
         .output()
         .expect("Failed to execute command");
-    println!("cat command output: {}", String::from_utf8_lossy(&cat_output.stdout));
+    println!(
+        "cat command output: {}",
+        String::from_utf8_lossy(&cat_output.stdout)
+    );
 
     let mut ffmpeg_command = Command::new("ffmpeg")
         .arg("-i")
-	.arg(temp_outfile)
+        .arg(temp_outfile)
         .arg("-acodec")
         .arg("copy")
         .arg(&outfile)
