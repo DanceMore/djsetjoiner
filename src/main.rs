@@ -1,16 +1,26 @@
+use colored::*;
+use dialoguer::Input;
 use glob::glob;
+use id3::Tag;
+use id3::TagLike;
 use std::env;
 use std::io::{self, BufRead};
 use std::process::{exit, Command, Stdio};
 use tempfile::tempdir;
-use id3::Tag;
-use id3::TagLike;
-use dialoguer::Input;
-use colored::*;
 
 fn main() {
-    println!("{}", "[!] tool assumes files in the format of /path/to/root/Artist - Album/DiscName/*.mp3".red().bold());
-    println!("{}", "[!] some of these assumptions are not optional!".red().bold());
+    println!(
+        "{}",
+        "[!] tool assumes files in the format of /path/to/root/Artist - Album/DiscName/*.mp3"
+            .red()
+            .bold()
+    );
+    println!(
+        "{}",
+        "[!] some of these assumptions are not optional!"
+            .red()
+            .bold()
+    );
     println!("{}", "[!] DiscName is often CD1, CD2".red());
 
     let args: Vec<String> = env::args().collect();
@@ -35,15 +45,18 @@ fn main() {
     let named_dir: &str;
 
     if one_arg {
-    named_dir = pwd_parts.last().unwrap();
+        named_dir = pwd_parts.last().unwrap();
     } else {
-    named_dir = pwd_parts[pwd_parts.len() - 2];
+        named_dir = pwd_parts[pwd_parts.len() - 2];
     }
     let parts: Vec<&str> = named_dir.split('-').collect();
     let dir_artist = parts.get(0).map_or("", |s| s.trim()); // map_or() to chomp extra
-    let dir_album  = parts.get(1).map_or("", |s| s.trim()); // space characters
+    let dir_album = parts.get(1).map_or("", |s| s.trim()); // space characters
     let dir_disc = pwd_parts.last().unwrap().replace(char::is_whitespace, "");
-    println!("{}", "[?] guesses based on Directory Structure...".cyan().bold());
+    println!(
+        "{}",
+        "[?] guesses based on Directory Structure...".cyan().bold()
+    );
     println!("{}", format!("[-] artist:\t\t{}", dir_artist).cyan().bold());
     println!("{}", format!("[-] album:\t\t{}", dir_album).cyan().bold());
 
@@ -55,15 +68,32 @@ fn main() {
         .collect();
 
     if let Some(first_file) = list.first() {
-            if let Ok(tag) = Tag::read_from_path(first_file) {
-                println!("{}", "[?] guesses based on First File ID3 Tags...".green().bold());
-                println!("{}", format!("[-] Album:\t\t{:?}", tag.album()).green().bold());
-                println!("{}", format!("[-] Album Artist:\t{:?}", tag.album_artist()).green().bold());
-                println!("{}", format!("[-] Artist:\t\t{:?}", tag.artist()).green().bold());
-                println!("{}", format!("[-] Title (album?):\t{:?}", tag.title()).green());
-            } else {
-                println!("Failed to read ID3 tags from the file");
-            }
+        if let Ok(tag) = Tag::read_from_path(first_file) {
+            println!(
+                "{}",
+                "[?] guesses based on First File ID3 Tags...".green().bold()
+            );
+            println!(
+                "{}",
+                format!("[-] Album:\t\t{:?}", tag.album()).green().bold()
+            );
+            println!(
+                "{}",
+                format!("[-] Album Artist:\t{:?}", tag.album_artist())
+                    .green()
+                    .bold()
+            );
+            println!(
+                "{}",
+                format!("[-] Artist:\t\t{:?}", tag.artist()).green().bold()
+            );
+            println!(
+                "{}",
+                format!("[-] Title (album?):\t{:?}", tag.title()).green()
+            );
+        } else {
+            println!("Failed to read ID3 tags from the file");
+        }
     } else {
         println!("No files found");
     }
@@ -138,17 +168,46 @@ fn main() {
         exit(1);
     }
 
-    println!("{}", format!("[!] Output file created at: {}", outfile).green().bold());
+    println!(
+        "{}",
+        format!("[!] Output file created at: {}", outfile)
+            .green()
+            .bold()
+    );
 
     // Open the temporary output file with ID3 tag support
-    let mut tag = Tag::read_from_path(&outfile)
-        .expect("Failed to read ID3 tags from output file");
+    let mut tag = Tag::read_from_path(&outfile).expect("Failed to read ID3 tags from output file");
 
-    println!("{}", "[+] writing the following ID3 Tags to Output File...".yellow().bold());
-    println!("{}", format!("[-] Artist:\t\t{:?}", entered_artist).yellow().bold());
-    println!("{}", format!("[-] Album Artist:\t{:?}", entered_artist).yellow().bold());
-    println!("{}", format!("[-] Title:\t\t{:?}", entered_album_name).yellow().bold());
-    println!("{}", format!("[-] Album:\t\t{:?}", entered_album_name).yellow().bold());
+    println!(
+        "{}",
+        "[+] writing the following ID3 Tags to Output File..."
+            .yellow()
+            .bold()
+    );
+    println!(
+        "{}",
+        format!("[-] Artist:\t\t{:?}", entered_artist)
+            .yellow()
+            .bold()
+    );
+    println!(
+        "{}",
+        format!("[-] Album Artist:\t{:?}", entered_artist)
+            .yellow()
+            .bold()
+    );
+    println!(
+        "{}",
+        format!("[-] Title:\t\t{:?}", entered_album_name)
+            .yellow()
+            .bold()
+    );
+    println!(
+        "{}",
+        format!("[-] Album:\t\t{:?}", entered_album_name)
+            .yellow()
+            .bold()
+    );
     println!("{}", format!("[-] Genre:\t\tDJ Set").yellow().bold());
 
     // Modify the ID3 tags as needed
